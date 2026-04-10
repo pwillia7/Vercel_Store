@@ -43,14 +43,27 @@ function revalidateCartRoutes() {
  * Pre-flight stock check gives a clear, user-facing error before the request
  * ever hits the cart API. If the stock check itself fails (API down, etc.) we
  * fall through and let the cart API be the final authority.
+ *
+ * Performance: read the existing token first (cheap cookie lookup), then run
+ * the stock check and cart creation in parallel. For returning users the
+ * token resolves instantly. For first-time users this saves one serial round
+ * trip — createCart() and getProductStock() are independent and can overlap.
  */
 export async function addToCart(
   productId: string,
   quantity: number,
 ): Promise<ActionResult<CartItem>> {
   try {
-    try {
-      const stock = await getProductStock(productId)
+    const existingToken = await getCartToken()
+
+    const [stock, token] = await Promise.all([
+      getProductStock(productId).catch(() => null),
+      existingToken
+        ? Promise.resolve(existingToken)
+        : createCart().then(async (t) => { await setCartToken(t); return t }),
+    ])
+
+    if (stock) {
       if (!stock.inStock) {
         return { success: false, error: 'This item is currently out of stock.' }
       }
@@ -60,11 +73,8 @@ export async function addToCart(
           error: `Only ${stock.stock} unit${stock.stock === 1 ? '' : 's'} left in stock. Please reduce your quantity.`,
         }
       }
-    } catch {
-      // Stock fetch failed — proceed and let the cart API enforce limits
     }
 
-    const token = await ensureCartToken()
     const item = await apiAddToCart(token, productId, quantity)
     revalidateCartRoutes()
     return { success: true, data: item }
