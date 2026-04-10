@@ -117,7 +117,9 @@ Pre-built at deploy time via `generateStaticParams` → `getProducts()`.
 ┌──────────────────────────────────────────────────────────────────────┐
 │ STATIC SHELL                                                         │
 │                                                                      │
-│  (page wrapper only — no data in shell)                             │
+│  SearchPage (page.tsx)                                               │
+│  getProducts()  ·  use cache: remote  ·  hours                      │
+│  └── <link rel="preload"> for first product image (LCP)             │
 │                                                                      │
 │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
 │  ░  SearchContent  (awaits searchParams → dynamic boundary)      ░   │
@@ -163,6 +165,7 @@ Pre-built at deploy time via `generateStaticParams` → `getCategories()`.
 │  Breadcrumb + category header + product count                       │
 │  getCategories()  ·  use cache: remote  ·  hours                    │
 │  getProducts()    ·  use cache: remote  ·  hours                    │
+│  └── <link rel="preload"> for first category product image (LCP)    │
 │                                                                      │
 │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
 │  ░  CategoryFilterContent  (awaits searchParams → dynamic)       ░   │
@@ -221,7 +224,7 @@ Pre-built at deploy time via `generateStaticParams` → `getCategories()`.
 | `getProducts()` | `use cache: remote` | revalidate: 1hr | `products` |
 | `getProductById(id)` | `use cache: remote` | revalidate: 1hr | `product:{id}`, `products` |
 | `getProductPrice(id)` | `use cache: remote` | revalidate: 60s, expire: 1hr | `product:{id}` |
-| `getCategories()` | `use cache: remote` | revalidate: 1day | `categories` |
+| `getCategories()` | `use cache: remote` | revalidate: 1hr | `categories` |
 | `getStoreConfig()` | `use cache: remote` | revalidate: 1day | — |
 | `getProductStock(id)` | none | LIVE | — |
 | `getPromotion()` | `use cache: remote` | revalidate: 60s, expire: 1hr | — |
