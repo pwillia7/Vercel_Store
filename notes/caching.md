@@ -50,13 +50,16 @@ Cache directives:
 ┌──────────────────────────────────────────────────────────────────────┐
 │ STATIC SHELL                                                         │
 │                                                                      │
-│  Hero  (static JSX, no data fetch)                                  │
+│  HomePage (page.tsx)                                                 │
+│  getProducts()  ·  use cache: remote  ·  hours                      │
+│  └── <link rel="preload"> for first featured product image (LCP)    │
 │                                                                      │
 │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
 │  ░  PromoBanner                                                  ░   │
 │  ░  getPromotion()  ·  use cache: remote  ·  revalidate: 60s    ░   │
-│  ░  time validity (active, validFrom, validUntil) checked live  ░   │
 │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
+│                                                                      │
+│  Hero  (static JSX — Vercel triangle SVG, no data fetch)            │
 │                                                                      │
 │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
 │  ░  FeaturedProducts                                             ░   │
