@@ -34,7 +34,6 @@ coverage/
 .vercel/
 
 # ─── Internal / planning docs ─────────────────────────────────────────────────
-notes/
 IMPLEMENTATION_PLAN.md
 
 # ─── Claude Code ──────────────────────────────────────────────────────────────
