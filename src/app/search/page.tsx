@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { getCategories, getProducts } from '@/lib/api/client'
+import { getProducts, getCategories } from '@/lib/api/client'
 import {
   filterProducts,
   extractTagFacets,
@@ -142,9 +142,17 @@ async function SearchContent({ searchParams }: SearchPageProps) {
  * the PPR static shell. All filter logic lives in SearchContent (above), which
  * is the Suspense-wrapped dynamic hole rendered fresh on every request.
  */
-export default function SearchPage({ searchParams }: SearchPageProps) {
+export default async function SearchPage({ searchParams }: SearchPageProps) {
+  const products = await getProducts()
+  const lcpImageUrl = products[0]?.images?.[0] ?? null
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      {/* LCP preload — browser starts fetching the first product image at static
+          shell time, before SearchContent's Suspense boundary resolves. */}
+      {lcpImageUrl && (
+        <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
+      )}
       <Suspense
         fallback={
           <div className="flex flex-col gap-8" aria-hidden="true">
