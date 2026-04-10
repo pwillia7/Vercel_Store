@@ -16,7 +16,7 @@ export function Hero() {
         className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+            'linear-gradient(var(--color-white) 1px, transparent 1px), linear-gradient(90deg, var(--color-white) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
         aria-hidden="true"
@@ -28,9 +28,9 @@ export function Hero() {
           viewBox="0 0 116 100"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="w-72 opacity-[0.15]"
+          className="w-72 opacity-[0.15] text-white"
         >
-          <path fillRule="evenodd" d="M57.5 0L115 100H0L57.5 0Z" fill="white" />
+          <path fillRule="evenodd" d="M57.5 0L115 100H0L57.5 0Z" fill="currentColor" />
         </svg>
       </div>
 
@@ -71,9 +71,9 @@ export function Hero() {
               viewBox="0 0 116 100"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="w-64"
+              className="w-64 text-white"
             >
-              <path fillRule="evenodd" d="M57.5 0L115 100H0L57.5 0Z" fill="white" />
+              <path fillRule="evenodd" d="M57.5 0L115 100H0L57.5 0Z" fill="currentColor" />
             </svg>
           </div>
 
