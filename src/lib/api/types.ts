@@ -44,9 +44,9 @@ export interface Promotion {
   title: string
   description: string
   code?: string
-  discount?: string
-  discountPercentage?: number
-  expiresAt?: string
+  discountPercent?: number
+  validFrom?: string
+  validUntil?: string
   active?: boolean
 }
 

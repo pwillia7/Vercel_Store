@@ -126,11 +126,18 @@ export async function getCategories(): Promise<Category[]> {
  * Not cached — called from a Suspense-wrapped component so it fetches fresh
  * on every page load without blocking the static shell.
  */
+/**
+ * Fetch the current promotion. Remote-cached for 1 minute across all instances.
+ * Returns the raw promo object — time validity is checked in PromoBanner at
+ * render time so expiry is always accurate regardless of cache state.
+ */
 export async function getPromotion(): Promise<Promotion | null> {
+  'use cache: remote'
+  cacheLife({ stale: 30, revalidate: 60, expire: 3600 })
+
   try {
     return await apiFetch<Promotion>('/promotions')
   } catch {
-    // Promotion fetch failing is non-critical — hide the banner gracefully
     return null
   }
 }

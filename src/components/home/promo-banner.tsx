@@ -1,15 +1,21 @@
 import { getPromotion } from '@/lib/api/client'
 
 /**
- * PromoBanner — dynamic Server Component (no cache).
+ * PromoBanner — dynamic Server Component.
  *
- * Intentionally uncached so the promotion is fetched fresh on every page
- * load. Wrapped in Suspense on the home page so it streams in after the
- * static shell without blocking anything above it.
+ * getPromotion() is remote-cached for 1 minute (API protection), but the
+ * time validity check (active, validFrom, validUntil) runs here on every
+ * render so a promo is never shown past its expiry regardless of cache state.
+ * Wrapped in Suspense on the home page so it streams in after the static shell.
  */
 export async function PromoBanner() {
   const promo = await getPromotion()
   if (!promo) return null
+  if (!promo.active) return null
+
+  const now = new Date()
+  if (promo.validFrom && now < new Date(promo.validFrom)) return null
+  if (promo.validUntil && now > new Date(promo.validUntil)) return null
 
   return (
     <div className="border-b border-zinc-800 bg-zinc-950">
@@ -24,8 +30,8 @@ export async function PromoBanner() {
               {promo.code}
             </span>
           )}
-          {promo.discount && (
-            <span className="text-emerald-400 font-semibold">{promo.discount}</span>
+          {promo.discountPercent && (
+            <span className="text-emerald-400 font-semibold">{promo.discountPercent}% off</span>
           )}
         </div>
       </div>

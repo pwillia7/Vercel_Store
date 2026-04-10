@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { cacheTag, cacheLife } from 'next/cache'
 import { getCategories, getProducts } from '@/lib/api/client'
 import { filterProducts } from '@/lib/search/filter-products'
+import { CACHE_TAGS } from '@/lib/cache/tags'
 
 export const metadata: Metadata = {
   title: 'Categories',
@@ -19,6 +21,11 @@ export const metadata: Metadata = {
  * from the cached product list — no extra API calls per category.
  */
 export default async function CategoriesPage() {
+  'use cache'
+  cacheTag(CACHE_TAGS.CATEGORIES)
+  cacheTag(CACHE_TAGS.PRODUCTS)
+  cacheLife('hours')
+
   const [categories, allProducts] = await Promise.all([getCategories(), getProducts()])
 
   // Compute product count per category in-memory from cached data, drop empties
