@@ -4,6 +4,8 @@ import './globals.css'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { getStoreConfig } from '@/lib/api/client'
+import { Analytics } from '@vercel/analytics/next';
+
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -83,6 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Analytics />
       </head>
       <body className="flex min-h-full flex-col bg-black text-white">
         <Header />
