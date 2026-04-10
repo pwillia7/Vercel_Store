@@ -6,7 +6,8 @@
  * cached data.
  *
  * Tag policy:
- * - PRODUCTS / PRODUCT / CATEGORIES: long-lived (1 hr), stable catalog data
+ * - PRODUCTS / PRODUCT / CATEGORIES: 1 hr, remote cache shared across all instances
+ * - STORE_CONFIG: 1 day, remote cache
  * - PROMOTIONS: short-lived (60 s), semi-random API responses
  * - STOCK / CART: never cached — always fetched fresh
  */

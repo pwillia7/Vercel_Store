@@ -4,12 +4,10 @@ import { getStoreConfig } from '@/lib/api/client'
 
 export async function Footer() {
   'use cache'
-  cacheLife('weeks')
+  cacheLife('days')
 
-  const [year, config] = await Promise.all([
-    Promise.resolve(new Date().getFullYear()),
-    getStoreConfig(),
-  ])
+  const year = new Date().getFullYear()
+  const config = await getStoreConfig()
 
   const storeName = config?.storeName ?? 'Vercel Swag Store'
   const { twitter, github, discord } = config?.socialLinks ?? {}

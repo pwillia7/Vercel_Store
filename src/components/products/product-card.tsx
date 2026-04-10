@@ -5,7 +5,7 @@ import type { Product } from '@/lib/api/types'
 
 interface ProductCardProps {
   product: Product
-  /** Pass true for above-the-fold cards — injects <link rel="preload"> for the image */
+  /** Pass true for above-the-fold cards — sets eager loading and high fetch priority */
   priority?: boolean
 }
 
@@ -30,7 +30,8 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             src={image}
             alt={product.name}
             fill
-            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />

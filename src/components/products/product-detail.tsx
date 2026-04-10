@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { Suspense } from 'react'
-import { formatPrice } from '@/lib/format/currency'
 import { ProductActions, ProductActionsSkeleton } from './product-actions'
+import { ProductPrice, ProductPriceSkeleton } from './product-price'
 import { WishlistButton } from './wishlist-button'
 import type { Product } from '@/lib/api/types'
 
@@ -24,7 +24,7 @@ export function ProductDetail({ product, wishlistEnabled, reviewsEnabled }: Prod
               src={image}
               alt={product.name}
               fill
-              priority
+              preload
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />
@@ -49,7 +49,9 @@ export function ProductDetail({ product, wishlistEnabled, reviewsEnabled }: Prod
 
           <h1 className="text-2xl font-bold text-white sm:text-3xl">{product.name}</h1>
 
-          <p className="text-2xl font-semibold text-white">{formatPrice(product.price)}</p>
+          <Suspense fallback={<ProductPriceSkeleton />}>
+            <ProductPrice productId={product.id} />
+          </Suspense>
 
           <Suspense fallback={<ProductActionsSkeleton />}>
             <ProductActions productId={product.id} />

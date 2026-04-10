@@ -68,15 +68,15 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
 }
 
 // ─── Cached Catalog Functions ─────────────────────────────────────────────────
-// These use "use cache" to persist results across requests.
-// Stable catalog data is cached for 1 hour. Invalidate with revalidateTag().
+// All catalog functions use "use cache: remote" — shared across all serverless
+// instances. All catalog data is cached for 1 hour. Invalidate with revalidateTag().
 
 /**
- * Fetch all products. Cached for ~1 hour.
+ * Fetch all products. Remote-cached for 1 hour, shared across all instances.
  * This is the backbone for the homepage grid and search filtering.
  */
 export async function getProducts(): Promise<Product[]> {
-  'use cache'
+  'use cache: remote'
   cacheTag(CACHE_TAGS.PRODUCTS)
   cacheLife('hours')
 
@@ -84,11 +84,11 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 /**
- * Fetch a single product by id. Cached for ~1 hour.
+ * Fetch a single product by id. Remote-cached for 1 hour, shared across all instances.
  * The product detail page is mostly static; stock is fetched separately.
  */
 export async function getProductById(id: string): Promise<Product> {
-  'use cache'
+  'use cache: remote'
   cacheTag(CACHE_TAGS.PRODUCT(id))
   cacheTag(CACHE_TAGS.PRODUCTS) // also shares the broad tag
   cacheLife('hours')
@@ -97,12 +97,26 @@ export async function getProductById(id: string): Promise<Product> {
 }
 
 /**
- * Fetch all categories. Cached for ~1 day (rarely changes).
+ * Fetch live price for a product. Remote-cached for 1 minute across all instances.
+ * Short TTL (<5 min revalidate) automatically excludes this from the static shell,
+ * making it a dynamic hole — wrap callers in a Suspense boundary.
+ */
+export async function getProductPrice(id: string): Promise<number> {
+  'use cache: remote'
+  cacheTag(CACHE_TAGS.PRODUCT(id))
+  cacheLife({ stale: 60, revalidate: 60, expire: 3600 })
+
+  const product = await apiFetch<Product>(`/products/${encodeURIComponent(id)}`)
+  return product.price
+}
+
+/**
+ * Fetch all categories. Remote-cached for 1 hour, shared across all instances.
  */
 export async function getCategories(): Promise<Category[]> {
-  'use cache'
+  'use cache: remote'
   cacheTag(CACHE_TAGS.CATEGORIES)
-  cacheLife('days')
+  cacheLife('hours')
 
   return apiFetch<Category[]>('/categories')
 }
@@ -122,11 +136,11 @@ export async function getPromotion(): Promise<Promotion | null> {
 }
 
 /**
- * Fetch store configuration. Cached for ~1 week.
+ * Fetch store configuration. Remote-cached for 1 day, shared across all instances.
  */
 export async function getStoreConfig(): Promise<StoreConfig | null> {
-  'use cache'
-  cacheLife('weeks')
+  'use cache: remote'
+  cacheLife('days')
 
   try {
     return await apiFetch<StoreConfig>('/store/config')

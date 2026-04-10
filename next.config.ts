@@ -11,10 +11,17 @@ const nextConfig: NextConfig = {
     useCache: true,
   },
   images: {
+    // qualities is required in Next.js 16 to prevent abuse of the optimization endpoint
+    qualities: [75],
+    // AVIF preferred (better compression for LCP), WebP as fallback
+    formats: ['image/avif', 'image/webp'],
+    // Product images don't change — 31 days prevents constant re-encoding on the slow REST API
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: '*.public.blob.vercel-storage.com',
+        pathname: '/**',
       },
     ],
   },
