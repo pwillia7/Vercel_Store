@@ -87,13 +87,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <Analytics />
-        <SpeedInsights />
       </head>
       <body className="flex min-h-full flex-col bg-black text-white">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
