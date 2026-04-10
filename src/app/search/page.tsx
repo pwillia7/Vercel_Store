@@ -78,9 +78,9 @@ async function SearchContent({ searchParams }: SearchPageProps) {
   const safePage = Math.min(currentPage, totalPages)
   const results = allResults.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
-  // Hide filters when there's only one result, or when every tag applies to every
-  // product in the set (tag filtering wouldn't narrow anything)
-  const showFilters = totalCount > 1
+  // Show filters based on the pre-tag result set — using totalCount (post-tag)
+  // would hide the tag cloud when deselecting a tag narrows results to 1.
+  const showFilters = baseResults.length > 1
   const allTagsMatchAll = facets.length > 0 && facets.every((f) => f.count === baseResults.length)
   const showTagFacets = showFilters && facets.length > 0 && !allTagsMatchAll
 
