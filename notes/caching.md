@@ -202,18 +202,59 @@ Pre-built at deploy time via `generateStaticParams` → `getCategories()`.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ FULLY DYNAMIC (reads session cookie — no static shell)               │
+│ STREAMING — static shell + deferred cart content                     │
 │                                                                      │
-│  getCartToken()  ·  reads cookie  ·  LIVE                           │
-│  getCart(token)  ·  LIVE                                             │
-│  CartItemRow     ·  server component, live cart data                │
-│  CartSummary     ·  server component, live cart data                │
+│  CartPage (synchronous)                                              │
+│  └── "Your Cart" h1  ·  STATIC SHELL  ·  streams with first chunk   │
+│                                                                      │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
+│  ░  CartContent  (async, Suspense-deferred)                      ░   │
+│  ░  getCartToken()  ·  reads cookie  ·  LIVE                     ░   │
+│  ░  getCart(token)  ·  LIVE                                      ░   │
+│  ░  CartItemRow  ·  'use client'                                 ░   │
+│  ░  CartSummary  ·  server component, live data                  ░   │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
+│                                                                      │
+│  loading.tsx  ·  router-level skeleton, prefetched for instant nav  │
 │                                                                      │
 │  Mutations (Server Actions) call:                                   │
 │  revalidatePath('/', 'layout')  — refreshes cart badge count        │
 │  revalidatePath('/cart')        — refreshes cart page               │
 └──────────────────────────────────────────────────────────────────────┘
 ```
+
+### TTFB / LCP
+
+Previously `CartPage` awaited `getCartToken()` and `getCart(token)` at the top
+level, so TTFB = cookie read + full cart API round trip and the h1 couldn't
+paint until both resolved.
+
+Now `CartPage` is synchronous. The "Your Cart" h1 is the LCP element — it
+renders with the first HTML chunk. `CartContent` defers both awaits behind a
+`<Suspense>` boundary and streams in the skeleton → real content transition.
+
+### Why no `use cache` directive applies here
+
+All three cache directives were evaluated and rejected:
+
+**`use cache: remote`** — each cart is keyed by a unique session token, creating one
+cache entry per user. The official docs explicitly flag this as a bad fit: "If cache
+keys have mostly unique values per request (user-specific parameters), cache utilization
+will be near-zero." Cart data also changes on every mutation, causing constant staleness.
+
+**`use cache`** — in-memory LRU per serverless instance. The docs confirm that in
+serverless environments cache entries typically don't persist across requests (each
+request can hit a different instance). No meaningful hit rate for runtime cart data.
+
+**`use cache: private`** — browser-only (never stored server-side), so it provides no
+TTFB relief — the server still executes the function on every request. Its mandatory
+≥30s stale window also conflicts with the mutation-then-navigate flow: a user who
+adds an item and immediately visits `/cart` could see their stale (pre-mutation) cart.
+Experimental and not appropriate for correctness-critical cart state.
+
+The LIVE strategy with `revalidatePath` on every Server Action mutation is correct
+and provides the freshness guarantee cart data requires. TTFB is addressed by
+streaming, not caching.
 
 ---
 
