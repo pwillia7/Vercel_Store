@@ -11,11 +11,11 @@ import { getPromotion } from '@/lib/api/client'
 export async function PromoBanner() {
   const promo = await getPromotion()
   if (!promo) return null
-  if (!promo.active) return null
+  if (promo.active === false) return null
 
-  const now = new Date()
-  if (promo.validFrom && now < new Date(promo.validFrom)) return null
-  if (promo.validUntil && now > new Date(promo.validUntil)) return null
+  // const now = new Date()
+  // if (promo.validFrom && now < new Date(promo.validFrom)) return null
+  // if (promo.validUntil && now > new Date(promo.validUntil)) return null
 
   return (
     <div className="border-b border-zinc-800 bg-zinc-950">
