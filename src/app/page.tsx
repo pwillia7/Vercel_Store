@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { getStoreConfig } from '@/lib/api/client'
+import { getStoreConfig, getProducts } from '@/lib/api/client'
 import { Hero } from '@/components/home/hero'
 import { PromoBanner, PromoBannerFallback } from '@/components/home/promo-banner'
 import { FeaturedProducts } from '@/components/home/featured-products'
@@ -25,9 +25,19 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const products = await getProducts()
+  const featured = products.filter((p) => p.featured).slice(0, 1)
+  const lcpImageUrl = (featured.length ? featured : products)[0]?.images?.[0] ?? null
+
   return (
     <>
+      {/* LCP preload — browser starts fetching the first featured product image
+          at static shell time, before the FeaturedProducts Suspense resolves. */}
+      {lcpImageUrl && (
+        <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
+      )}
+
       <Suspense fallback={<PromoBannerFallback />}>
         <PromoBanner />
       </Suspense>

@@ -25,7 +25,7 @@ export async function PromoBanner() {
           {promo.description && (
             <span className="text-zinc-400">{promo.description}</span>
           )}
-          {promo.discountPercent && promo.discountPercent > 0 && (
+          {(promo.discountPercent ?? 0) > 0 && (
             <>
               {promo.code && (
                 <span className="inline-flex items-center rounded border border-zinc-700 bg-zinc-900 px-2 py-0.5 font-mono text-xs text-zinc-300">
