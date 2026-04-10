@@ -186,12 +186,23 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         (c) => (c.slug ?? c.name.toLowerCase().replace(/\s+/g, '-')) === slug,
       ) as Category | undefined) ?? notFound())
 
-  const categoryProductCount = isAll
-    ? allProducts.length
-    : filterProducts(allProducts, { category: slug }, Infinity).length
+  const categoryProducts = isAll
+    ? allProducts
+    : filterProducts(allProducts, { category: slug }, Infinity)
+  const categoryProductCount = categoryProducts.length
+
+  // Preload the first product image so the browser starts fetching it
+  // at static shell time, before the Suspense/dynamic hole resolves.
+  const lcpImageUrl = categoryProducts[0]?.images?.[0] ?? null
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      {/* LCP preload — tells the browser to fetch the first product image before
+          the Suspense/dynamic hole resolves, closing the discovery gap. */}
+      {lcpImageUrl && (
+        <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
+      )}
+
       {/* Breadcrumb — static */}
       <nav className="mb-8 flex items-center gap-2 text-sm text-zinc-500" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-zinc-300 transition-colors">Home</Link>
