@@ -90,7 +90,7 @@ export async function Header() {
           <Suspense fallback={<CartBadgeFallback />}>
             <CartBadge />
           </Suspense>
-          <MobileMenu showWishlist={config?.features?.wishlist} />
+          <MobileMenu showWishlist={config?.features?.wishlist ?? false} />
         </div>
 
       </div>
