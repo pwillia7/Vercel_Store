@@ -114,9 +114,7 @@ Pre-built at deploy time via `generateStaticParams` → `getProducts()`.
 ┌──────────────────────────────────────────────────────────────────────┐
 │ STATIC SHELL                                                         │
 │                                                                      │
-│  SearchPage (page.tsx)                                               │
-│  getProducts()  ·  use cache: remote  ·  hours                      │
-│  └── <link rel="preload"> for first product image (LCP)             │
+│  SearchPage (page.tsx) — synchronous, no top-level awaits           │
 │                                                                      │
 │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
 │  ░  SearchContent  (awaits searchParams → dynamic boundary)      ░   │

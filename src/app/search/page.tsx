@@ -136,23 +136,15 @@ async function SearchContent({ searchParams }: SearchPageProps) {
 }
 
 /**
- * Search page — static shell.
+ * Search page — synchronous static shell.
  *
- * The page function itself does NOT await `searchParams`, keeping it part of
- * the PPR static shell. All filter logic lives in SearchContent (above), which
- * is the Suspense-wrapped dynamic hole rendered fresh on every request.
+ * The page function has no top-level awaits — all data fetching lives in
+ * SearchContent (the Suspense-wrapped dynamic hole) which reads searchParams
+ * and fetches fresh on every request.
  */
-export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const products = await getProducts()
-  const lcpImageUrl = products[0]?.images?.[0] ?? null
-
+export default function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      {/* LCP preload — browser starts fetching the first product image at static
-          shell time, before SearchContent's Suspense boundary resolves. */}
-      {lcpImageUrl && (
-        <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
-      )}
       <Suspense
         fallback={
           <div className="flex flex-col gap-8" aria-hidden="true">
