@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getProductById, getProducts } from '@/lib/api/client'
-import { getFeatureFlags } from '@/lib/config/features'
+import { getProductById, getProducts, getStoreConfig } from '@/lib/api/client'
 import { ApiError } from '@/lib/api/errors'
 import { ProductDetail } from '@/components/products/product-detail'
 import { RecentlyViewedTracker } from '@/components/home/recently-viewed-client'
@@ -48,19 +47,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params
 
-  // Both are cached — product (1hr), flags (weeks). Run in parallel.
-  let product
-  try {
-    ;[product] = await Promise.all([
-      getProductById(slug),
-      // getFeatureFlags() fetched below after product resolves — keep error handling clean
-    ])
-  } catch (err) {
-    if (err instanceof ApiError && err.isNotFound) notFound()
-    throw err
-  }
-
-  const flags = await getFeatureFlags()
+  const [product, config] = await Promise.all([
+    getProductById(slug).catch((err: unknown) => {
+      if (err instanceof ApiError && err.isNotFound) notFound()
+      throw err
+    }),
+    getStoreConfig(),
+  ])
 
   const trackerItem = {
     id: product.id,
@@ -73,7 +66,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       {/* Track this view in localStorage (client-side, no render output) */}
-      {flags.recentlyViewed && <RecentlyViewedTracker product={trackerItem} />}
+      {config?.features?.recentlyViewed && <RecentlyViewedTracker product={trackerItem} />}
 
       {/* Breadcrumb */}
       <nav className="mb-8 flex items-center gap-2 text-sm text-zinc-500" aria-label="Breadcrumb">
@@ -86,8 +79,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
       <ProductDetail
         product={product}
-        wishlistEnabled={flags.wishlist}
-        reviewsEnabled={flags.reviews}
+        wishlistEnabled={config?.features?.wishlist}
+        reviewsEnabled={config?.features?.reviews}
       />
     </div>
   )

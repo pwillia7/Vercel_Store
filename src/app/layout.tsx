@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 
 /**
  * Root metadata driven by the store config API.
- * getStoreConfig() is cached for weeks so this adds no meaningful latency.
+ * getStoreConfig() is cached for days so this adds no meaningful latency.
  * Falls back to hardcoded values if the config fetch fails.
  */
 export async function generateMetadata(): Promise<Metadata> {

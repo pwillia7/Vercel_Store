@@ -26,7 +26,6 @@ Cache directives:
 │                                                                      │
 │  ┌─ Header ─────────────────────────────────────────────────────┐   │
 │  │  getStoreConfig()  ·  use cache: remote  ·  days             │   │
-│  │  getFeatureFlags() ·  (calls getStoreConfig, free)           │   │
 │  │                                                               │   │
 │  │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │   │
 │  │  ░  CartBadge — reads session cookie  ·  LIVE               ░  │   │
@@ -50,28 +49,26 @@ Cache directives:
 ┌──────────────────────────────────────────────────────────────────────┐
 │ STATIC SHELL                                                         │
 │                                                                      │
-│  HomePage (page.tsx)                                                 │
-│  getProducts()  ·  use cache: remote  ·  hours                      │
-│  └── <link rel="preload"> for first featured product image (LCP)    │
+│  HomePage (page.tsx) — synchronous, no top-level awaits             │
 │                                                                      │
 │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
-│  ░  PromoBanner                                                  ░   │
+│  ░  PromoBanner  (dynamic — no use cache)                        ░   │
 │  ░  getPromotion()  ·  use cache: remote  ·  revalidate: 60s    ░   │
 │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
 │                                                                      │
 │  Hero  (static JSX — Vercel triangle SVG, no data fetch)            │
 │                                                                      │
-│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
-│  ░  FeaturedProducts                                             ░   │
-│  ░  use cache  ·  hours  ·  tag: products                        ░   │
-│  ░  └── getProducts()  ·  use cache: remote  ·  hours           ░   │
-│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   │
+│  ▓  FeaturedProducts                                             ▓   │
+│  ▓  use cache  ·  hours  ·  tag: products                        ▓   │
+│  ▓  └── getProducts()  ·  use cache: remote  ·  hours           ▓   │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   │
 │                                                                      │
-│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
-│  ░  RecentlyViewedSection                                        ░   │
-│  ░  use cache  ·  weeks  (feature flag check only)              ░   │
-│  ░  └── [ RecentlyViewedDisplay ]  ·  CLIENT  ·  localStorage   ░   │
-│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   │
+│  ▓  RecentlyViewedSection                                        ▓   │
+│  ▓  use cache  ·  days  (feature flag check only)               ▓   │
+│  ▓  └── [ RecentlyViewedDisplay ]  ·  CLIENT  ·  localStorage   ▓   │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   │
 │                                                                      │
 │  ProductCard images:                                                 │
 │  loading="eager" fetchPriority="high" on first 4 (above fold)       │
@@ -188,7 +185,7 @@ Pre-built at deploy time via `generateStaticParams` → `getCategories()`.
 │ STATIC SHELL                                                         │
 │                                                                      │
 │  Feature flag gate                                                   │
-│  getFeatureFlags()  ·  (calls getStoreConfig, remote  ·  days)      │
+│  getStoreConfig()  ·  use cache: remote  ·  days                    │
 │  Returns 404 if wishlist flag is off                                 │
 │                                                                      │
 │  [ WishlistDisplay ]  ·  CLIENT  ·  reads localStorage              │
@@ -274,12 +271,17 @@ streaming, not caching.
 
 ---
 
+## Homepage LCP
+
+`FeaturedProducts` is a `'use cache'` component — it renders as part of the prerendered shell, not behind a Suspense boundary. `ProductGrid` receives `priorityCount={4}`, which sets `loading="eager"` and `fetchPriority="high"` on the first four product cards (the full first desktop row). Because these images are in the shell, `next/image` emits native preload hints for them automatically — no manual `<link rel="preload">` needed.
+
+---
+
 ## Why `use cache: remote` vs `use cache`
 
 Plain `use cache` is in-memory per serverless instance. On Vercel, each instance has its own ephemeral cache — concurrent instances each miss and hit the slow REST API independently. `use cache: remote` stores in a shared handler across all instances, so at most one API call per TTL window regardless of traffic.
 
-**Rule:** anything called from a dynamic Suspense hole (request-time) uses `use cache: remote`.
-`FeaturedProducts` and `Footer` use plain `use cache` because they are static shell components — their output is pre-rendered at build/ISR time, not per-request.
+**Rule:** data functions called at request-time use `use cache: remote`. `FeaturedProducts` and `Footer` use plain `use cache` because they cache the rendered RSC payload at build/ISR time as shell components, on top of the already-remote-cached data functions they call.
 
 ---
 

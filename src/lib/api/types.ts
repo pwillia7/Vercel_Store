@@ -69,16 +69,6 @@ export interface Cart {
   itemCount: number
 }
 
-// ─── Health ───────────────────────────────────────────────────────────────────
-
-export type ServiceStatus = 'ok' | 'degraded' | 'down'
-
-export interface HealthStatus {
-  status: ServiceStatus
-  services?: Record<string, ServiceStatus>
-  timestamp?: string
-}
-
 // ─── Store Config ─────────────────────────────────────────────────────────────
 
 export interface StoreConfig {

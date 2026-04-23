@@ -7,7 +7,6 @@ import type {
   Cart,
   CartItem,
   Category,
-  HealthStatus,
   Product,
   Promotion,
   StockInfo,
@@ -243,10 +242,3 @@ export async function removeCartItem(cartToken: string, itemId: string): Promise
   })
 }
 
-/**
- * Health check — used only as a diagnostic when critical operations fail.
- * NOT called before catalog or page renders.
- */
-export async function getHealth(): Promise<HealthStatus> {
-  return apiFetch<HealthStatus>('/health')
-}

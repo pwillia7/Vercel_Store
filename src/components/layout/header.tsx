@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { CartBadge, CartBadgeFallback } from './cart-badge'
-import { getFeatureFlags } from '@/lib/config/features'
 import { getStoreConfig } from '@/lib/api/client'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { MobileMenu } from './mobile-menu'
@@ -9,8 +8,7 @@ import { MobileMenu } from './mobile-menu'
 /**
  * Header — async Server Component.
  *
- * Both getFeatureFlags() and getStoreConfig() are cached for weeks —
- * calling them here adds no latency after the first request.
+ * getStoreConfig() is cached for days — calling it here adds no latency after the first request.
  * CartBadge is isolated in Suspense because it reads the session cookie.
  *
  * Layout:
@@ -18,7 +16,7 @@ import { MobileMenu } from './mobile-menu'
  *   Desktop (md+): logo | Home · Search · Categories · [Wishlist] · theme · cart
  */
 export async function Header() {
-  const [flags, config] = await Promise.all([getFeatureFlags(), getStoreConfig()])
+  const config = await getStoreConfig()
   const storeName = config?.storeName ?? 'Swag Store'
 
   return (
@@ -56,7 +54,7 @@ export async function Header() {
             Categories
           </Link>
 
-          {flags.wishlist && (
+          {config?.features?.wishlist && (
             <Link
               href="/wishlist"
               className="text-zinc-400 hover:text-white transition-colors"
@@ -92,7 +90,7 @@ export async function Header() {
           <Suspense fallback={<CartBadgeFallback />}>
             <CartBadge />
           </Suspense>
-          <MobileMenu showWishlist={flags.wishlist} />
+          <MobileMenu showWishlist={config?.features?.wishlist} />
         </div>
 
       </div>
