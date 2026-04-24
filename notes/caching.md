@@ -265,7 +265,6 @@ streaming, not caching.
 | `getProductStock(id)` | none | LIVE | — |
 | `getPromotion()` | `use cache: remote` | revalidate: 60s, expire: 1hr | — |
 | `getCart(token)` | none | LIVE | — |
-| `getHealth()` | none | LIVE | — |
 
 ---
 
@@ -280,6 +279,22 @@ streaming, not caching.
 Plain `use cache` is in-memory per serverless instance. On Vercel, each instance has its own ephemeral cache — concurrent instances each miss and hit the slow REST API independently. `use cache: remote` stores in a shared handler across all instances, so at most one API call per TTL window regardless of traffic.
 
 **Rule:** data functions called at request-time use `use cache: remote`. `FeaturedProducts` and `Footer` use plain `use cache` because they cache the rendered RSC payload at build/ISR time as shell components, on top of the already-remote-cached data functions they call.
+
+---
+
+## Suspense Boundary Rules
+
+**When a Suspense boundary is required:**
+
+| Component type | Needs Suspense? | Reason |
+|---|---|---|
+| Dynamic server component (no `use cache`) | Yes | Prevents blocking the static shell |
+| `'use cache'` component | No | Renders as part of the prerendered shell |
+| Client component using `useSearchParams()` in static shell | Yes | Prevents CSR bailout for the whole page |
+| Client component using `useSearchParams()` inside a dynamic hole | No | Already inside a Suspense; not prerendered |
+| LIVE data fetch (cookies, uncached API) | Yes | Must not block the static shell |
+
+**The key rule from the Next.js 16 docs:** the `useSearchParams()` CSR bailout only applies during prerendering. Client components that exclusively render inside a dynamic Suspense hole (e.g. `SearchControls` inside `SearchContent`) are never prerendered, so they don't need their own Suspense — the outer boundary is sufficient.
 
 ---
 
