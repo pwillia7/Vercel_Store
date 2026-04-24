@@ -116,15 +116,11 @@ async function CategoryFilterContent({
     <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
       <aside className="w-full shrink-0 lg:w-56">
         <div className="mb-6">
-          <Suspense fallback={<div className="h-10 w-full skeleton rounded-md" aria-hidden="true" />}>
-            <SearchControls initialQuery={query ?? ''} placeholder="Search" />
-          </Suspense>
+          <SearchControls initialQuery={query ?? ''} placeholder="Search" />
         </div>
 
         {showTagFacets && (
-          <Suspense fallback={null}>
-            <TagFacets facets={facets} activeTags={activeTags} />
-          </Suspense>
+          <TagFacets facets={facets} activeTags={activeTags} />
         )}
 
         {hasFilters && (

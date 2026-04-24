@@ -99,22 +99,16 @@ async function SearchContent({ searchParams }: SearchPageProps) {
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end">
         <div className="flex-1">
-          <Suspense fallback={<div className="h-10 w-full skeleton rounded-md" aria-hidden="true" />}>
-            <SearchControls initialQuery={query ?? ''} />
-          </Suspense>
+          <SearchControls initialQuery={query ?? ''} />
         </div>
         {showFilters && (
-          <Suspense fallback={<div className="h-10 w-40 skeleton rounded-md" aria-hidden="true" />}>
-            <CategoryFilter categories={categories} selected={category} />
-          </Suspense>
+          <CategoryFilter categories={categories} selected={category} />
         )}
       </div>
 
       {showTagFacets && (
         <div className="mb-8 rounded-lg border border-zinc-800 bg-zinc-950 p-4">
-          <Suspense fallback={null}>
-            <TagFacets facets={facets} activeTags={activeTags} />
-          </Suspense>
+          <TagFacets facets={facets} activeTags={activeTags} />
         </div>
       )}
 
@@ -128,9 +122,7 @@ async function SearchContent({ searchParams }: SearchPageProps) {
         priorityCount={4}
       />
 
-      <Suspense fallback={null}>
-        <Pagination currentPage={safePage} totalPages={totalPages} />
-      </Suspense>
+      <Pagination currentPage={safePage} totalPages={totalPages} />
     </>
   )
 }
