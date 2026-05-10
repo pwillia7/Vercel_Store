@@ -7,7 +7,7 @@ import { formatPrice } from '@/lib/format/currency'
 import { addToCart } from '@/app/actions/cart'
 import type { WishlistItem } from '@/components/products/wishlist-button'
 
-function AddToCartButton({ productId }: { productId: string }) {
+function AddToCartButton({ productId, compact = false }: { productId: string; compact?: boolean }) {
   const [isPending, startTransition] = useTransition()
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
@@ -24,7 +24,9 @@ function AddToCartButton({ productId }: { productId: string }) {
       type="button"
       onClick={handleAdd}
       disabled={isPending}
-      className={`inline-flex h-9 items-center justify-center rounded-md border px-4 text-xs font-medium transition-colors disabled:cursor-not-allowed ${
+      className={`inline-flex items-center justify-center rounded-md border font-medium transition-colors disabled:cursor-not-allowed ${
+        compact ? 'h-8 px-3 text-xs' : 'h-9 px-4 text-xs'
+      } ${
         status === 'success'
           ? 'border-emerald-700 bg-emerald-950 text-emerald-400'
           : status === 'error'
@@ -55,7 +57,7 @@ const PlaceholderImage = () => (
 export function CompareTable({ items, onClose }: CompareTableProps) {
   return (
     <div id="compare-table" className="mt-12 rounded-lg border border-zinc-800 bg-zinc-950 overflow-hidden">
-      <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+      <div className="flex items-center justify-between border-b border-zinc-800 px-4 sm:px-6 py-4">
         <h2 className="font-semibold text-white">
           Comparing {items.length} product{items.length !== 1 ? 's' : ''}
         </h2>
@@ -68,11 +70,50 @@ export function CompareTable({ items, onClose }: CompareTableProps) {
         </button>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile: 2-column card grid */}
+      <div className="sm:hidden grid grid-cols-2 gap-3 p-3">
+        {items.map((item) => (
+          <div key={item.id} className="flex flex-col rounded-lg border border-zinc-800 overflow-hidden">
+            <div className="relative aspect-square w-full bg-zinc-900">
+              {item.image
+                ? <Image src={item.image} alt={item.name} fill sizes="50vw" className="object-cover" />
+                : <PlaceholderImage />}
+            </div>
+            <div className="flex flex-1 flex-col gap-2 p-2">
+              <Link
+                href={`/products/${item.slug}`}
+                prefetch={true}
+                className="text-xs font-medium text-white leading-snug line-clamp-2 hover:text-zinc-300 transition-colors"
+              >
+                {item.name}
+              </Link>
+              <p className="text-sm font-semibold text-white">{formatPrice(item.price)}</p>
+              {item.category && (
+                <p className="text-xs text-zinc-400 capitalize">{item.category}</p>
+              )}
+              {item.description && (
+                <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">{item.description}</p>
+              )}
+              <div className="mt-auto flex flex-col gap-1.5 pt-1">
+                <AddToCartButton productId={item.id} compact />
+                <Link
+                  href={`/products/${item.slug}`}
+                  prefetch={true}
+                  className="inline-flex h-8 items-center justify-center rounded-md bg-white px-3 text-xs font-medium text-black hover:bg-zinc-200 transition-colors"
+                >
+                  View →
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: attribute table */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-zinc-800">
-              {/* Sticky label column */}
               <th className="w-28 shrink-0 p-4 bg-zinc-950 sticky left-0 z-10" aria-hidden="true" />
               {items.map((item) => (
                 <th key={item.id} className="min-w-52 p-4 text-left align-top">
@@ -96,7 +137,6 @@ export function CompareTable({ items, onClose }: CompareTableProps) {
           </thead>
 
           <tbody>
-            {/* Price */}
             <tr className="border-b border-zinc-800/50">
               <td className="p-4 text-xs font-semibold uppercase tracking-widest text-zinc-500 bg-zinc-950 sticky left-0 z-10 align-middle">
                 Price
@@ -108,7 +148,6 @@ export function CompareTable({ items, onClose }: CompareTableProps) {
               ))}
             </tr>
 
-            {/* Category */}
             <tr className="border-b border-zinc-800/50">
               <td className="p-4 text-xs font-semibold uppercase tracking-widest text-zinc-500 bg-zinc-950 sticky left-0 z-10 align-top">
                 Category
@@ -122,7 +161,6 @@ export function CompareTable({ items, onClose }: CompareTableProps) {
               ))}
             </tr>
 
-            {/* Description */}
             <tr className="border-b border-zinc-800/50">
               <td className="p-4 text-xs font-semibold uppercase tracking-widest text-zinc-500 bg-zinc-950 sticky left-0 z-10 align-top">
                 Description
@@ -136,7 +174,6 @@ export function CompareTable({ items, onClose }: CompareTableProps) {
               ))}
             </tr>
 
-            {/* Tags */}
             <tr className="border-b border-zinc-800/50">
               <td className="p-4 text-xs font-semibold uppercase tracking-widest text-zinc-500 bg-zinc-950 sticky left-0 z-10 align-top">
                 Tags
@@ -158,7 +195,6 @@ export function CompareTable({ items, onClose }: CompareTableProps) {
               ))}
             </tr>
 
-            {/* CTAs */}
             <tr>
               <td className="p-4 bg-zinc-950 sticky left-0 z-10" />
               {items.map((item) => (

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { flushSync } from 'react-dom'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/format/currency'
@@ -19,15 +20,25 @@ export function WishlistDisplay({ comparisonEnabled = false }: WishlistDisplayPr
   const [mounted, setMounted] = useState(false)
   const [selected, setSelected] = useState<string[]>([])
   const [comparing, setComparing] = useState(false)
+  // Ref persists across Activity hide/show cycles — unlike state, it is never reset.
+  // Used to ensure first-mount logic (localStorage read, pre-selection) only runs once.
+  const initializedRef = useRef(false)
 
   useEffect(() => {
+    if (initializedRef.current) return
+    initializedRef.current = true
+
     setMounted(true)
     try {
-      setItems(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'))
+      const stored: WishlistItem[] = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
+      setItems(stored)
+      if (comparisonEnabled && stored.length >= 2) {
+        setSelected([stored[0].id, stored[1].id])
+      }
     } catch {
       setItems([])
     }
-  }, [])
+  }, [comparisonEnabled])
 
   function remove(id: string) {
     const updated = items.filter((item) => item.id !== id)
@@ -99,13 +110,13 @@ export function WishlistDisplay({ comparisonEnabled = false }: WishlistDisplayPr
                   disabled={isDisabled}
                   aria-label={isSelected ? `Remove ${item.name} from comparison` : `Add ${item.name} to comparison`}
                   aria-pressed={isSelected}
-                  className={`absolute left-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded border text-xs font-bold transition-colors disabled:cursor-not-allowed ${
+                  className={`absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded border text-xs font-bold transition-colors disabled:cursor-not-allowed ${
                     isSelected
                       ? 'border-white bg-white text-black'
-                      : 'border-zinc-600 bg-black/60 text-transparent hover:border-zinc-400'
+                      : 'border-zinc-500 bg-black/70 text-zinc-400 hover:border-zinc-300 hover:text-white'
                   }`}
                 >
-                  ✓
+                  {isSelected ? '✓' : '+'}
                 </button>
               )}
 
@@ -195,7 +206,7 @@ export function WishlistDisplay({ comparisonEnabled = false }: WishlistDisplayPr
               <button
                 type="button"
                 onClick={() => {
-                  setComparing(true)
+                  flushSync(() => setComparing(true))
                   document.getElementById('compare-table')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 }}
                 className="inline-flex h-9 items-center rounded-md bg-white px-4 text-sm font-medium text-black hover:bg-zinc-200 transition-colors"

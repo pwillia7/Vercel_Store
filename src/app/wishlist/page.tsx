@@ -23,7 +23,7 @@ export default async function WishlistPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Wishlist</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Your saved products, stored locally on this device.
+          Your saved products.
           {config?.features?.productComparison && (
             <> Select up to {4} items to compare them side by side.</>
           )}
