@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { addToCart } from '@/app/actions/cart'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 interface AddToCartFormProps {
   productId: string
@@ -24,9 +25,6 @@ export function AddToCartForm({
 }: AddToCartFormProps) {
   const [quantity, setQuantity] = useState(1)
   const [isPending, startTransition] = useTransition()
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(
-    null,
-  )
 
   const effectiveMax = Math.max(1, maxQuantity)
   const isDisabled = !initiallyAvailable || maxQuantity === 0
@@ -43,14 +41,12 @@ export function AddToCartForm({
   }
 
   function handleAddToCart() {
-    setFeedback(null)
     startTransition(async () => {
       const result = await addToCart(productId, quantity)
       if (result.success) {
-        setFeedback({ type: 'success', message: 'Added to cart!' })
-        setTimeout(() => setFeedback(null), 3000)
+        toast.success('Added to cart!')
       } else {
-        setFeedback({ type: 'error', message: result.error })
+        toast.error(result.error)
       }
     })
   }
@@ -104,19 +100,6 @@ export function AddToCartForm({
       >
         {isDisabled ? 'Out of Stock' : 'Add to Cart'}
       </Button>
-
-      {/* Feedback message */}
-      {feedback && (
-        <p
-          className={`text-sm text-center ${
-            feedback.type === 'success' ? 'text-emerald-400' : 'text-red-400'
-          }`}
-          role="status"
-          aria-live="polite"
-        >
-          {feedback.message}
-        </p>
-      )}
     </div>
   )
 }

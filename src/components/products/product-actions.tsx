@@ -21,21 +21,6 @@ const dotStyles: Record<StockVariant, string> = {
   unavailable: 'bg-zinc-600',
 }
 
-/**
- * ProductActions — Server Component, always dynamic.
- *
- * Makes ONE stock fetch and uses the result to drive BOTH:
- *   1. The stock availability indicator
- *   2. The AddToCartForm (disabled state + max quantity)
- *
- * This component is wrapped in a single Suspense boundary in ProductDetail,
- * which means the entire product info section (name, price, image, description)
- * renders immediately from the "use cache" layer while only this interactive
- * section waits for the stock API.
- *
- * Previously, ProductDetail awaited getStockAvailability() directly, which
- * blocked the entire component tree until the stock response arrived.
- */
 export async function ProductActions({ productId }: ProductActionsProps) {
   let variant: StockVariant = 'in'
   let label = 'In stock'
@@ -70,7 +55,6 @@ export async function ProductActions({ productId }: ProductActionsProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Stock badge */}
       <div className="flex items-center gap-3">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${badgeStyles[variant]}`}
@@ -80,28 +64,13 @@ export async function ProductActions({ productId }: ProductActionsProps) {
           {label}
         </span>
 
-        {/* Exact count shown alongside badge when in-stock quantity is known */}
         {stockCount !== null && variant === 'in' && (
           <span className="text-xs text-zinc-500">{stockCount} available</span>
         )}
       </div>
 
-      {/* Urgency callout — pulsing dot when fewer than 10 remain and not already labelled as low */}
-      {available && maxQty > 0 && maxQty < 10 && variant !== 'low' && (
-        <div className="flex items-center gap-2.5 rounded-md border border-amber-900/50 bg-amber-950/30 px-3 py-2">
-          <span className="relative flex h-2 w-2 shrink-0" aria-hidden="true">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
-          </span>
-          <p className="text-xs font-medium text-amber-400">
-            Only {maxQty} left — order quickly!
-          </p>
-        </div>
-      )}
-
       <div className="border-t border-zinc-800" />
 
-      {/* Add to cart form with real stock state */}
       <AddToCartForm
         productId={productId}
         maxQuantity={maxQty}
@@ -111,22 +80,37 @@ export async function ProductActions({ productId }: ProductActionsProps) {
   )
 }
 
-/** Skeleton shown while ProductActions streams in */
+/**
+ * Skeleton shown while ProductActions streams in.
+ *
+ * Height breakdown (px):
+ *   badge (26) + gap-4 (16) + divider (1) + gap-4 (16) +
+ *   label (20) + gap-2 (8) + buttons (36) + gap-4 (16) + CTA (48) = 187
+ *
+ * Badge is 26px: border(1) + py-1(4) + text-xs line-height(16) + py-1(4) + border(1)
+ */
 export function ProductActionsSkeleton() {
   return (
     <div className="flex flex-col gap-4">
-      {/* Badge skeleton — rounded-full, matches pill shape */}
+      {/* Badge pill: border(1) + py-1(4) + text-xs(16) + py-1(4) + border(1) = 26px */}
       <div className="flex items-center gap-3">
-        <span className="h-6 w-24 skeleton rounded-full" aria-hidden="true" />
+        <span className="h-[26px] w-24 skeleton rounded-full" aria-hidden="true" />
       </div>
+
       <div className="border-t border-zinc-800" />
-      <div className="flex flex-col gap-3">
-        <span className="h-4 w-20 skeleton rounded" aria-hidden="true" />
-        <div className="flex items-center gap-3">
-          <span className="h-9 w-9 skeleton rounded-md" aria-hidden="true" />
-          <span className="h-4 w-6 skeleton rounded" aria-hidden="true" />
-          <span className="h-9 w-9 skeleton rounded-md" aria-hidden="true" />
+
+      {/* AddToCartForm: gap-4 outer, gap-2 for label+buttons */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          {/* "Quantity" label: text-sm line-height = 20px = h-5 */}
+          <span className="h-5 w-20 skeleton rounded" aria-hidden="true" />
+          <div className="flex items-center gap-3">
+            <span className="h-9 w-9 skeleton rounded-md" aria-hidden="true" />
+            <span className="h-9 w-12 skeleton rounded" aria-hidden="true" />
+            <span className="h-9 w-9 skeleton rounded-md" aria-hidden="true" />
+          </div>
         </div>
+        {/* CTA: size="lg" = h-12 */}
         <span className="h-12 w-full skeleton rounded-md" aria-hidden="true" />
       </div>
     </div>

@@ -61,7 +61,14 @@ export function WishlistButton({ product }: WishlistButtonProps) {
     setSaved(!saved)
   }
 
-  if (!mounted) return null
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-1.5 text-sm" aria-hidden="true">
+        <div className="h-4 w-4 shrink-0" />
+        <span className="invisible">Save</span>
+      </div>
+    )
+  }
 
   return (
     <button

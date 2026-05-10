@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/footer'
 import { getStoreConfig } from '@/lib/api/client'
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Toaster } from 'sonner'
 
 
 
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <Analytics />
         <SpeedInsights />
+        <Toaster position="bottom-right" theme="dark" richColors />
       </body>
     </html>
   )
