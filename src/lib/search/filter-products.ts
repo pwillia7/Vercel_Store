@@ -82,6 +82,35 @@ export function extractTagFacets(products: Product[]): TagFacet[] {
 }
 
 /**
+ * Build a stable tag facet list using the FULL catalog as the reference set.
+ *
+ * Tags are sourced from allProducts so the list never shrinks as filters
+ * change — this prevents the tag panel from collapsing and causing layout
+ * shift. Each tag carries the count from baseResults (post-query/category,
+ * pre-tag); tags absent from baseResults get count=0 and render as disabled.
+ *
+ * Sorted: active-count tags first (desc), then zero-count tags (alphabetical).
+ */
+export function extractAllTagFacets(
+  allProducts: Product[],
+  baseResults: Product[],
+): TagFacet[] {
+  const baseFacetMap = new Map(
+    extractTagFacets(baseResults).map((f) => [f.tag, f.count]),
+  )
+  const allTagSet = new Set<string>()
+  for (const product of allProducts) {
+    for (const tag of product.tags ?? []) allTagSet.add(tag)
+  }
+  return Array.from(allTagSet)
+    .map((tag) => ({ tag, count: baseFacetMap.get(tag) ?? 0 }))
+    .sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count
+      return a.tag.localeCompare(b.tag)
+    })
+}
+
+/**
  * Parse a comma-separated tags URL param into a string array.
  * e.g. "sale,new-arrival" → ["sale", "new-arrival"]
  */

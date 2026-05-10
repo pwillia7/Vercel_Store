@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { getProducts, getCategories } from '@/lib/api/client'
 import {
   filterProducts,
-  extractTagFacets,
+  extractAllTagFacets,
   parseTagsParam,
 } from '@/lib/search/filter-products'
 import { SearchControls } from '@/components/search/search-controls'
@@ -67,7 +67,11 @@ async function SearchContent({ searchParams }: SearchPageProps) {
 
   const hasFilters = Boolean(query || (category && category !== 'all') || activeTags.length > 0)
   const baseResults = filterProducts(allProducts, { query, category }, Infinity)
-  const facets = extractTagFacets(baseResults)
+
+  // Stable tag list: all tags from the full catalog, counts from the
+  // query/category-filtered set. Tags absent from current results get count=0
+  // and render disabled — the list never shrinks, so the panel never shifts.
+  const facets = extractAllTagFacets(allProducts, baseResults)
 
   // Full filtered set (for pagination math) — then slice to the current page
   const allResults = hasFilters
@@ -78,11 +82,10 @@ async function SearchContent({ searchParams }: SearchPageProps) {
   const safePage = Math.min(currentPage, totalPages)
   const results = allResults.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
-  // Show filters based on the pre-tag result set — using totalCount (post-tag)
-  // would hide the tag cloud when deselecting a tag narrows results to 1.
   const showFilters = baseResults.length > 1
-  const allTagsMatchAll = facets.length > 0 && facets.every((f) => f.count === baseResults.length)
-  const showTagFacets = showFilters && facets.length > 0 && !allTagsMatchAll
+  // Always show the tag panel when there are any tags — hides only when the
+  // catalog has no tags at all, keeping the layout stable across filter changes.
+  const showTagFacets = facets.length > 0
 
   return (
     <>
@@ -140,13 +143,31 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
       <Suspense
         fallback={
           <div className="flex flex-col gap-6" aria-hidden="true">
-            {/* Controls row — matches SearchControls h-10 + CategoryFilter h-10 */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-              <div className="h-10 flex-1 skeleton rounded-md" />
-              <div className="h-10 w-40 skeleton rounded-md" />
+            {/* Controls row: search form (input + button) + category filter */}
+            <div className="mb-0 flex flex-col gap-4 sm:flex-row sm:items-end">
+              <div className="flex flex-1 gap-2">
+                <div className="h-10 flex-1 skeleton rounded-md" />
+                <div className="h-10 w-20 skeleton rounded-md" />
+              </div>
+              <div className="flex w-full items-center gap-2 sm:w-auto">
+                <div className="h-4 w-16 skeleton rounded shrink-0" />
+                <div className="h-10 flex-1 skeleton rounded-md sm:flex-none sm:w-40" />
+              </div>
             </div>
-            {/* Grid — gap-6 and columns match ProductGrid default (columns=4) */}
-            <ProductGridSkeleton count={8} columns={4} />
+            {/* Tag facets panel — mirrors collapsed TagFacets: header + 8 pills + show-more */}
+            <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4">
+              <div className="flex flex-col gap-3">
+                <div className="h-4 w-24 skeleton rounded" />
+                <div className="min-h-[60px] flex flex-wrap gap-2">
+                  {['w-14', 'w-20', 'w-16', 'w-24', 'w-14', 'w-20', 'w-16', 'w-14', 'w-20', 'w-16', 'w-24', 'w-14'].map((w, i) => (
+                    <div key={i} className={`h-7 skeleton rounded-full ${w} ${i >= 8 ? 'hidden sm:flex' : ''}`} />
+                  ))}
+                </div>
+                <div className="h-4 w-28 skeleton rounded sm:hidden" />
+              </div>
+            </div>
+            {/* Product grid — columns=3 matches SearchResults default */}
+            <ProductGridSkeleton count={6} columns={3} />
           </div>
         }
       >

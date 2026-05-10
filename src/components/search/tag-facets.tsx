@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useLayoutEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import type { TagFacet } from '@/lib/search/filter-products'
 
@@ -9,76 +9,41 @@ interface TagFacetsProps {
   activeTags: string[]
 }
 
+const MOBILE_THRESHOLD = 8
+const DESKTOP_THRESHOLD = 12
+
 /**
  * TagFacets — Client Component.
  *
- * Renders interactive tag filter pills. Facets are computed server-side from
- * the post-query/category product set and passed as props — this component
- * only handles the URL interaction, not any data fetching.
- *
- * Clicking a tag toggles it in the URL `tags` param (comma-separated).
- * Multiple tags use OR logic: products matching ANY selected tag are shown.
- *
- * Collapsed state shows only the pills that fit on one row. `useLayoutEffect`
- * measures which pills land on the first row and slices before the browser
- * paints, so no flash of the full list is visible. A ResizeObserver re-triggers
- * measurement when the container width changes.
+ * Collapses to 8 tags on mobile and 12 on desktop by default.
+ * Uses CSS (hidden sm:inline-flex) for the mobile/desktop split so there's
+ * no JS breakpoint detection and no hydration mismatch.
+ * Active tags are always surfaced above the threshold.
+ * No DOM measurement — array slicing only, so layout is stable.
  */
 export function TagFacets({ facets, activeTags }: TagFacetsProps) {
+  const [expanded, setExpanded] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const [expanded, setExpanded] = useState(false)
-  const [firstRowCount, setFirstRowCount] = useState<number | null>(null)
-  const pillsRef = useRef<HTMLDivElement>(null)
-
-  // Re-measure whenever the facet set changes or we collapse back
-  useLayoutEffect(() => {
-    if (expanded) return
-    setFirstRowCount(null)
-  }, [expanded, facets])
-
-  // Count how many pills land on the first row.
-  // Runs after every render where firstRowCount is null (measurement pass).
-  // useLayoutEffect fires before the browser paints, so the full-list state
-  // is never visible — the browser only paints the sliced result.
-  useLayoutEffect(() => {
-    if (expanded || firstRowCount !== null || !pillsRef.current) return
-    const children = Array.from(pillsRef.current.children) as HTMLElement[]
-    if (children.length === 0) return
-    const firstTop = children[0].offsetTop
-    const count = children.filter((c) => c.offsetTop === firstTop).length
-    setFirstRowCount(count)
-  })
-
-  // Re-measure when the container is resized (e.g. window resize, sidebar toggle)
-  useLayoutEffect(() => {
-    const el = pillsRef.current
-    if (!el) return
-    const observer = new ResizeObserver(() => {
-      if (!expanded) setFirstRowCount(null)
-    })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [expanded])
 
   if (facets.length === 0) return null
 
-  // While measuring (firstRowCount === null) render all pills so offsetTop is accurate.
-  // opacity-0 ensures they're invisible during the measurement pass.
-  const isMeasuring = firstRowCount === null && !expanded
-  const visibleFacets = expanded || firstRowCount === null
+  // Render up to DESKTOP_THRESHOLD pills (plus any active tags beyond it).
+  const visibleFacets = expanded
     ? facets
-    : facets.slice(0, firstRowCount)
-  const collapsible = firstRowCount !== null && facets.length > firstRowCount
-  const hiddenCount = firstRowCount !== null ? facets.length - firstRowCount : 0
+    : facets.filter((f, i) => i < DESKTOP_THRESHOLD || activeTags.includes(f.tag))
+
+  const needsMobileCollapse = facets.length > MOBILE_THRESHOLD
+  const needsDesktopCollapse = facets.length > DESKTOP_THRESHOLD
+  const mobileHiddenCount = facets.length - MOBILE_THRESHOLD
+  const desktopHiddenCount = facets.length - DESKTOP_THRESHOLD
 
   function toggleTag(tag: string) {
     const params = new URLSearchParams(searchParams.toString())
     const current = activeTags.includes(tag)
       ? activeTags.filter((t) => t !== tag)
       : [...activeTags, tag]
-
     if (current.length > 0) {
       params.set('tags', current.join(','))
     } else {
@@ -112,32 +77,34 @@ export function TagFacets({ facets, activeTags }: TagFacetsProps) {
         )}
       </div>
 
-      <div
-        ref={pillsRef}
-        className={`flex flex-wrap gap-2 ${isMeasuring ? 'opacity-0' : ''}`}
-        role="group"
-        aria-label="Tag filters"
-      >
-        {visibleFacets.map(({ tag, count }) => {
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Tag filters">
+        {visibleFacets.map(({ tag, count }, index) => {
           const active = activeTags.includes(tag)
+          const isDisabled = count === 0 && !active
+          // Pills 8–11 are CSS-hidden on mobile; revealed on sm+ without JS.
+          const hiddenOnMobile = !expanded && index >= MOBILE_THRESHOLD && !active
+
           return (
             <button
               key={tag}
               type="button"
               onClick={() => toggleTag(tag)}
+              disabled={isDisabled}
               aria-pressed={active}
-              className={`
-                inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs
-                font-medium transition-colors
-                ${
-                  active
-                    ? 'border-white bg-white text-black'
-                    : 'border-zinc-700 bg-transparent text-zinc-400 hover:border-zinc-500 hover:text-white'
-                }
-              `}
+              className={`${hiddenOnMobile ? 'hidden sm:inline-flex' : 'inline-flex'} items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                isDisabled
+                  ? 'cursor-not-allowed border-zinc-800 text-zinc-600'
+                  : active
+                  ? 'border-white bg-white text-black'
+                  : 'border-zinc-700 bg-transparent text-zinc-400 hover:border-zinc-500 hover:text-white'
+              }`}
             >
               {tag}
-              <span className={`tabular-nums ${active ? 'text-zinc-500' : 'text-zinc-600'}`}>
+              <span
+                className={`tabular-nums ${
+                  active ? 'text-zinc-500' : isDisabled ? 'text-zinc-700' : 'text-zinc-600'
+                }`}
+              >
                 {count}
               </span>
             </button>
@@ -145,13 +112,32 @@ export function TagFacets({ facets, activeTags }: TagFacetsProps) {
         })}
       </div>
 
-      {collapsible && (
+      {/* Show more / less — separate buttons per breakpoint to display correct counts */}
+      {!expanded && needsMobileCollapse && (
         <button
           type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          onClick={() => setExpanded(true)}
+          className="sm:hidden text-xs text-zinc-500 hover:text-zinc-300 transition-colors text-left"
         >
-          {expanded ? '↑ Show less' : `↓ Show ${hiddenCount} more`}
+          ↓ Show {mobileHiddenCount} more
+        </button>
+      )}
+      {!expanded && needsDesktopCollapse && (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="hidden sm:block text-xs text-zinc-500 hover:text-zinc-300 transition-colors text-left"
+        >
+          ↓ Show {desktopHiddenCount} more
+        </button>
+      )}
+      {expanded && needsMobileCollapse && (
+        <button
+          type="button"
+          onClick={() => setExpanded(false)}
+          className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors text-left"
+        >
+          ↑ Show less
         </button>
       )}
     </div>
