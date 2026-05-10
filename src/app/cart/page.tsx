@@ -122,39 +122,67 @@ async function CartContent() {
 function CartSkeleton() {
   return (
     <div aria-hidden="true">
-      {/* Item count line */}
-      <div className="mb-6 h-4 w-16 rounded bg-zinc-800 skeleton" />
+      {/* Item count — text-sm = 20px = h-5 */}
+      <div className="mb-6 h-5 w-16 rounded bg-zinc-800 skeleton" />
 
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Item rows */}
         <div className="lg:col-span-2">
           <div className="divide-y divide-zinc-800 rounded-lg border border-zinc-800">
             <div className="px-4">
-              {Array.from({ length: 2 }).map((_, i) => (
+              {Array.from({ length: 1 }).map((_, i) => (
                 <div key={i} className="flex gap-4 py-4">
-                  {/* Thumbnail */}
+                  {/* Thumbnail — h-20 matches actual */}
                   <div className="h-20 w-20 shrink-0 rounded-md bg-zinc-800 skeleton" />
-                  {/* Text lines */}
-                  <div className="flex flex-1 flex-col gap-2 pt-1">
-                    <div className="h-4 w-3/4 rounded bg-zinc-800 skeleton" />
-                    <div className="h-3 w-1/4 rounded bg-zinc-800 skeleton" />
-                    <div className="mt-2 h-7 w-28 rounded bg-zinc-800 skeleton" />
+                  {/* Details — gap-1 + no pt-1 matches actual flex col */}
+                  <div className="flex flex-1 flex-col gap-1 min-w-0">
+                    {/* Name + line total — mirrors flex items-start justify-between */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="h-5 w-3/4 skeleton rounded" />
+                      <div className="h-5 w-12 shrink-0 skeleton rounded" />
+                    </div>
+                    {/* "X each" — text-xs = 16px = h-4 */}
+                    <div className="h-4 w-1/4 skeleton rounded" />
+                    {/* Controls — mirrors flex items-center justify-between */}
+                    <div className="mt-2 flex items-center justify-between">
+                      <div className="h-7 w-28 skeleton rounded" />
+                      <div className="h-4 w-10 skeleton rounded" />
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+          {/* "← Continue Shopping" — text-sm = h-5, mt-4 matches actual */}
+          <div className="mt-4 h-5 w-40 skeleton rounded" />
         </div>
 
         {/* Summary panel */}
         <div className="lg:col-span-1">
-          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-6 space-y-3">
-            <div className="h-4 w-32 rounded bg-zinc-800 skeleton" />
-            <div className="h-3 w-full rounded bg-zinc-800 skeleton" />
-            <div className="h-3 w-full rounded bg-zinc-800 skeleton" />
+          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-6">
+            {/* "Order Summary" — text-base = 24px = h-6, mb-4 */}
+            <div className="mb-4 h-6 w-36 skeleton rounded" />
+            {/* Subtotal + Shipping rows — space-y-2, text-sm = 20px = h-5 */}
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <div className="h-5 w-16 skeleton rounded" />
+                <div className="h-5 w-16 skeleton rounded" />
+              </div>
+              <div className="flex justify-between">
+                <div className="h-5 w-16 skeleton rounded" />
+                <div className="h-5 w-40 skeleton rounded" />
+              </div>
+            </div>
             <div className="my-4 border-t border-zinc-800" />
-            <div className="h-4 w-24 rounded bg-zinc-800 skeleton" />
-            <div className="mt-2 h-11 w-full rounded bg-zinc-800 skeleton" />
+            {/* Total — font-semibold, no text-sm, text-base = 24px = h-6 */}
+            <div className="flex justify-between">
+              <div className="h-6 w-10 skeleton rounded" />
+              <div className="h-6 w-16 skeleton rounded" />
+            </div>
+            {/* Checkout button — py-3 text-sm = 44px = h-11 */}
+            <div className="mt-6 h-11 w-full skeleton rounded-md" />
+            {/* Footer text — text-xs = 16px = h-4 */}
+            <div className="mt-3 h-4 w-full skeleton rounded" />
           </div>
         </div>
       </div>

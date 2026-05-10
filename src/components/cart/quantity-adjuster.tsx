@@ -75,11 +75,11 @@ export function QuantityAdjuster({ itemId, quantity, maxQuantity = 99 }: Quantit
 
   return (
     <div>
-      <div className={`flex items-center gap-1 ${isPending ? 'opacity-60 pointer-events-none' : ''}`}>
+      <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={() => handleStep(-1)}
-          disabled={isPending || localQty <= 1}
+          disabled={localQty <= 1}
           className="flex h-7 w-7 items-center justify-center rounded border border-zinc-700 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Decrease quantity"
         >
@@ -93,15 +93,14 @@ export function QuantityAdjuster({ itemId, quantity, maxQuantity = 99 }: Quantit
           value={localQty || ''}
           onChange={handleInputChange}
           onBlur={handleBlur}
-          disabled={isPending}
           aria-label="Quantity"
-          className="w-12 rounded border border-zinc-700 bg-transparent px-1 py-0.5 text-center text-sm tabular-nums text-white focus:border-zinc-500 focus:outline-none disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          className="w-12 rounded border border-zinc-700 bg-transparent px-1 py-0.5 text-center text-sm tabular-nums text-white focus:border-zinc-500 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         />
 
         <button
           type="button"
           onClick={() => handleStep(1)}
-          disabled={isPending || localQty >= maxQuantity}
+          disabled={localQty >= maxQuantity}
           className="flex h-7 w-7 items-center justify-center rounded border border-zinc-700 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Increase quantity"
         >
