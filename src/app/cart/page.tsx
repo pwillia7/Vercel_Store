@@ -77,7 +77,7 @@ async function CartContent() {
     return <EmptyCart />
   }
 
-  const itemCount = cart.itemCount ?? items.length
+  const itemCount = items.reduce((sum, item) => sum + (item.quantity ?? 0), 0)
 
   return (
     <>

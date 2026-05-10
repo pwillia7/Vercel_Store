@@ -15,7 +15,7 @@ export async function CartBadge() {
   if (token) {
     try {
       const cart = await getCart(token)
-      itemCount = cart.itemCount ?? cart.items?.length ?? 0
+      itemCount = cart.items?.reduce((sum, item) => sum + (item.quantity ?? 0), 0) ?? 0
     } catch {
       // Cart fetch failed — show 0. Don't crash the layout.
     }

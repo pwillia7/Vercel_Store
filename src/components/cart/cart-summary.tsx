@@ -9,17 +9,13 @@ export function CartSummary({ cart }: CartSummaryProps) {
   const subtotal = cart.total ?? cart.items.reduce((sum, item) => {
     return sum + (item.price ?? item.product?.price ?? 0) * item.quantity
   }, 0)
-
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-6">
       <h2 className="mb-4 text-base font-semibold text-white">Order Summary</h2>
 
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-zinc-400">
-            Subtotal ({cart.itemCount ?? cart.items.length}{' '}
-            {(cart.itemCount ?? cart.items.length) === 1 ? 'item' : 'items'})
-          </span>
+          <span className="text-zinc-400">Subtotal</span>
           <span className="text-white tabular-nums">{formatPrice(subtotal)}</span>
         </div>
 
