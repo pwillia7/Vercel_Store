@@ -1,10 +1,17 @@
+import { PromoBannerFallback } from '@/components/home/promo-banner'
+import { Hero } from '@/components/home/hero'
 import { ProductGridSkeleton } from '@/components/ui/skeleton'
 
 export default function Loading() {
   return (
     <>
+      {/* Real static components — gives pixel-perfect height match, no CLS */}
+      <PromoBannerFallback />
+      <Hero />
+
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8" aria-hidden="true">
-        <div className="mb-8 h-6 w-48 skeleton rounded" />
+        {/* text-xl = 1.75rem line-height = 28px = h-7 */}
+        <div className="mb-8 h-7 w-48 skeleton rounded" />
         <ProductGridSkeleton count={8} />
       </div>
 

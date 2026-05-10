@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useTransition } from 'react'
 import { updateCartItem } from '@/app/actions/cart'
+import { toast } from 'sonner'
 
 const DEBOUNCE_MS = 600
 
@@ -19,8 +20,7 @@ interface QuantityAdjusterProps {
  * revalidation or reverts on error.
  */
 export function QuantityAdjuster({ itemId, quantity, maxQuantity = 99 }: QuantityAdjusterProps) {
-  const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
+  const [, startTransition] = useTransition()
   const [localQty, setLocalQty] = useState(quantity)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   // Track the last confirmed server value so we can revert on error
@@ -35,11 +35,10 @@ export function QuantityAdjuster({ itemId, quantity, maxQuantity = 99 }: Quantit
   function scheduleUpdate(newQty: number) {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      setError(null)
       startTransition(async () => {
         const result = await updateCartItem(itemId, newQty)
         if (!result.success) {
-          setError(result.error ?? 'Failed to update quantity.')
+          toast.error(result.error ?? 'Failed to update quantity.')
           setLocalQty(committedQty.current)
         }
       })
@@ -107,9 +106,6 @@ export function QuantityAdjuster({ itemId, quantity, maxQuantity = 99 }: Quantit
           <span aria-hidden="true">+</span>
         </button>
       </div>
-      {error && (
-        <p className="mt-1 text-xs text-red-400" role="alert">{error}</p>
-      )}
     </div>
   )
 }

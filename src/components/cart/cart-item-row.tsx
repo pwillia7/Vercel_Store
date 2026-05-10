@@ -2,10 +2,11 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useTransition } from 'react'
+import { useTransition } from 'react'
 import { removeCartItem } from '@/app/actions/cart'
 import { QuantityAdjuster } from './quantity-adjuster'
 import { formatPrice } from '@/lib/format/currency'
+import { toast } from 'sonner'
 import type { CartItem } from '@/lib/api/types'
 
 interface CartItemRowProps {
@@ -18,15 +19,13 @@ interface CartItemRowProps {
  */
 export function CartItemRow({ item }: CartItemRowProps) {
   const [isRemoving, startTransition] = useTransition()
-  const [removeError, setRemoveError] = useState<string | null>(null)
   const image = item.product?.images?.[0]
   const lineTotal = (item.price ?? item.product?.price ?? 0) * item.quantity
 
   function handleRemove() {
-    setRemoveError(null)
     startTransition(async () => {
       const result = await removeCartItem(item.productId)
-      if (!result.success) setRemoveError(result.error ?? 'Failed to remove item.')
+      if (!result.success) toast.error(result.error ?? 'Failed to remove item.')
     })
   }
 
@@ -99,9 +98,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
           </button>
         </div>
 
-        {removeError && (
-          <p className="mt-1 text-xs text-red-400" role="alert">{removeError}</p>
-        )}
+
       </div>
     </div>
   )
