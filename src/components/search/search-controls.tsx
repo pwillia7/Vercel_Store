@@ -85,6 +85,7 @@ export function SearchControls({ initialQuery = '', placeholder = 'Search produc
           value={inputValue}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={placeholder}
+          autoFocus
           aria-label="Search products"
           className="h-10 w-full rounded-md border border-zinc-700 bg-zinc-900 pl-9 pr-4 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500"
         />

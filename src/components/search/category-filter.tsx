@@ -31,7 +31,7 @@ export function CategoryFilter({ categories, selected }: CategoryFilterProps) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex w-full items-center gap-2 sm:w-auto">
       <label
         htmlFor="category-filter"
         className="text-sm text-zinc-400 whitespace-nowrap"
@@ -42,7 +42,7 @@ export function CategoryFilter({ categories, selected }: CategoryFilterProps) {
         id="category-filter"
         value={selected ?? 'all'}
         onChange={(e) => handleChange(e.target.value)}
-        className="h-10 rounded-md border border-zinc-700 bg-zinc-900 px-3 text-sm text-white outline-none transition-colors focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500"
+        className="h-10 flex-1 min-w-[160px] rounded-md border border-zinc-700 bg-zinc-900 pl-3 pr-8 text-sm text-white outline-none transition-colors focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 sm:flex-none"
         aria-label="Filter by category"
       >
         <option value="all">All categories</option>

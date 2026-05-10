@@ -86,17 +86,6 @@ async function SearchContent({ searchParams }: SearchPageProps) {
 
   return (
     <>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">
-          {query ? `Results for "${query}"` : 'Search Products'}
-        </h1>
-        {!hasFilters && (
-          <p className="mt-1 text-sm text-zinc-500">
-            Search by name, description, or tag. Filter by category or collection.
-          </p>
-        )}
-      </div>
-
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end">
         <div className="flex-1">
           <SearchControls initialQuery={query ?? ''} />
@@ -133,15 +122,24 @@ async function SearchContent({ searchParams }: SearchPageProps) {
  * The page function has no top-level awaits — all data fetching lives in
  * SearchContent (the Suspense-wrapped dynamic hole) which reads searchParams
  * and fetches fresh on every request.
+ *
+ * The title and subtitle live here so they render immediately from the
+ * static shell with no Suspense delay and no layout shift.
  */
 export default function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      {/* Static title — always visible, no loading state */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-white">Search Products</h1>
+        <p className="mt-1 text-sm text-zinc-500">
+          Search by name, description, or tag. Filter by category or collection.
+        </p>
+      </div>
+
       <Suspense
         fallback={
-          <div className="flex flex-col gap-8" aria-hidden="true">
-            {/* Title — matches h1 text-2xl line-height */}
-            <div className="h-8 w-48 skeleton rounded" />
+          <div className="flex flex-col gap-6" aria-hidden="true">
             {/* Controls row — matches SearchControls h-10 + CategoryFilter h-10 */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
               <div className="h-10 flex-1 skeleton rounded-md" />
