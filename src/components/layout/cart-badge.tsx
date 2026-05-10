@@ -50,8 +50,6 @@ export async function CartBadge() {
           {itemCount > 99 ? '99+' : itemCount}
         </span>
       )}
-
-      <span className="hidden sm:inline text-sm">Cart</span>
     </Link>
   )
 }
@@ -59,7 +57,7 @@ export async function CartBadge() {
 /** Fallback shown while CartBadge is streaming in */
 export function CartBadgeFallback() {
   return (
-    <div className="flex items-center gap-2 text-zinc-600" aria-hidden="true">
+    <div className="relative flex items-center text-zinc-600" aria-hidden="true">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="20"
@@ -75,7 +73,6 @@ export function CartBadgeFallback() {
         <line x1="3" y1="6" x2="21" y2="6" />
         <path d="M16 10a4 4 0 0 1-8 0" />
       </svg>
-      <span className="hidden sm:inline text-sm">Cart</span>
     </div>
   )
 }
